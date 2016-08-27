@@ -1,12 +1,30 @@
 #include "AppDelegate.h"
-#include "HelloWorldScene.h"
+#include "MainScene.hpp"
 
 USING_NS_CC;
 
-static cocos2d::Size designResolutionSize = cocos2d::Size(480, 320);
-static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
-static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
-static cocos2d::Size largeResolutionSize = cocos2d::Size(2048, 1536);
+static const cocos2d::Size iPhoneLogicSize = cocos2d::Size(480, 320);
+static const cocos2d::Size iPhone5LogicSize = cocos2d::Size(1136, 640);
+static const cocos2d::Size iPadLogicSize = cocos2d::Size(1024, 768);
+
+typedef struct tagResource
+{
+    std::string name;
+    cocos2d::Size logicalSize;
+    cocos2d::Size physicalSize;
+    std::vector<std::string> folders;
+    
+} Resource;
+
+// landscape
+static Resource iPhoneRes       =   { "iPhone",     iPhoneLogicSize,  cocos2d::Size(480,  320),     {"iPhone"} };
+static Resource iPhoneHDRes     =   { "iPhoneHD",   iPhoneLogicSize,  cocos2d::Size(960,  640),     {"iPhoneHD", "iPhone", "iPad"} };
+static Resource iPadRes         =   { "iPad",       iPadLogicSize,    cocos2d::Size(1024,  768),    {"iPad", "iPhoneHD", "iPhone"} };
+static Resource iPhone5Res      =   { "iPhone5",    iPhone5LogicSize, cocos2d::Size(1136,  640),    {"iPhone5", "iPhoneHD", "iPhone"} };
+static Resource iPhone6Res      =   { "iPhone6",    iPhone5LogicSize, cocos2d::Size(1334, 750),     {"iPhone6", "iPad", "iPhoneHD", "iPhone"} };
+static Resource iPhone6PlusRes  =   { "iPhone6+",   iPhone5LogicSize, cocos2d::Size(2208, 1242),    {"iPhone6Plus", "iPhone6", "iPad", "iPhoneHD", "iPhone"} };
+static Resource iPadHDRes       =   { "iPadHD",     iPadLogicSize,    cocos2d::Size(2048, 1536),    {"iPadHD", "iPhone6Plus", "iPhone6", "iPad", "iPhoneHD", "iPhone"} };
+static Resource iPadProRes       =  { "iPadPro",    iPadLogicSize,    cocos2d::Size(2732, 2048),    {"iPadPro", "iPadHDRes", "iPad"} };
 
 AppDelegate::AppDelegate()
 {
@@ -53,33 +71,77 @@ bool AppDelegate::applicationDidFinishLaunching() {
     director->setAnimationInterval(1.0f / 60);
 
     // Set the design resolution
-    glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::NO_BORDER);
-    auto frameSize = glview->getFrameSize();
-    // if the frame's height is larger than the height of medium size.
-    if (frameSize.height > mediumResolutionSize.height)
-    {        
-        director->setContentScaleFactor(MIN(largeResolutionSize.height/designResolutionSize.height, largeResolutionSize.width/designResolutionSize.width));
-    }
-    // if the frame's height is larger than the height of small size.
-    else if (frameSize.height > smallResolutionSize.height)
-    {        
-        director->setContentScaleFactor(MIN(mediumResolutionSize.height/designResolutionSize.height, mediumResolutionSize.width/designResolutionSize.width));
-    }
-    // if the frame's height is smaller than the height of medium size.
-    else
-    {        
-        director->setContentScaleFactor(MIN(smallResolutionSize.height/designResolutionSize.height, smallResolutionSize.width/designResolutionSize.width));
-    }
+    this->setupResolutionPolicy();
 
     register_all_packages();
 
     // create a scene. it's an autorelease object
-    auto scene = HelloWorld::createScene();
+    auto scene = MainScene::createScene();
+    
+    auto printSize = [](const cocos2d::Size & s, const std::string & name) {
+        CCLOG("%s >> %ix%i", name.c_str(), (int)s.width, (int)s.height);
+    };
+    
+    auto winSize = director->getWinSize();
+    printSize(winSize, "getWinSize");
+    
+    auto winSizeInPixels = director->getWinSizeInPixels();
+    printSize(winSizeInPixels, "getWinSizeInPixels");
+    
+    auto designSize = director->getOpenGLView()->getDesignResolutionSize();
+    printSize(designSize, "getDesignResolutionSize");
+    
+    auto frameSize = director->getOpenGLView()->getFrameSize();
+    printSize(frameSize, "getFrameSize");
+    
+    auto visibleSize = director->getVisibleSize();
+    printSize(visibleSize, "getVisibleSize");
+    
+    auto viewPortSize = director->getOpenGLView()->getViewPortRect().size;
+    printSize(viewPortSize, "getViewPortRect().size");
+    
+    auto scaleFactor = director->getContentScaleFactor();
+    CCLOG("contentScaleFactor:%f\n", scaleFactor);
+    
+    
+    
+    
 
     // run
     director->runWithScene(scene);
 
     return true;
+}
+
+void AppDelegate::setupResolutionPolicy()
+{
+    const std::set<Resource *> availableResources = {&iPadRes, &iPadHDRes, &iPadProRes};
+    
+    auto calcScaleDistFunc = [](const cocos2d::Size & targetSize, const cocos2d::Size & candidateSize) -> double
+    {
+        const float scaleFactor = MIN(targetSize.width/candidateSize.width, targetSize.height/candidateSize.height);
+        const auto scaledCandidateSize = candidateSize*scaleFactor;
+        return fabs(scaledCandidateSize.width*scaledCandidateSize.height-candidateSize.width*candidateSize.height);
+    };
+    
+    auto director = Director::getInstance();
+    const Size targetSize = director->getOpenGLView()->getFrameSize();
+    double minScaleDist = std::numeric_limits<double>::max();
+    Resource * resForLoad = &iPadRes;//assign some defaul resource
+    for (auto res : availableResources) {
+        auto scaleDist = calcScaleDistFunc(targetSize, res->physicalSize);
+        if (scaleDist < minScaleDist) {
+            resForLoad = res;
+            minScaleDist = scaleDist;
+        }
+    }
+    
+    CCLOG("resForLoad >> %s\n", resForLoad->name.c_str());
+    
+    director->getOpenGLView()->setDesignResolutionSize(resForLoad->logicalSize.width, resForLoad->logicalSize.height, ResolutionPolicy::SHOW_ALL);
+    //director->getOpenGLView()->setDesignResolutionSize(targetSize.width, targetSize.height, ResolutionPolicy::EXACT_FIT);
+    
+    FileUtils::getInstance()->setSearchPaths(resForLoad->folders);
 }
 
 // This function will be called when the app is inactive. Note, when receiving a phone call it is invoked.
