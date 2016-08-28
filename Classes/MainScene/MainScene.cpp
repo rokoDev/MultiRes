@@ -19,6 +19,7 @@ Scene* MainScene::createScene()
     
     // 'layer' is an autorelease object
     auto layer = MainScene::createDefault();
+    layer->refreshMemberVariables();
     
     // add layer as a child to scene
     scene->addChild(layer);
@@ -53,8 +54,9 @@ MainScene::MainScene(): m_pMainPanel(nullptr), m_pBuySkillButton(nullptr), m_pCo
 MainScene * MainScene::createDefault(void)
 {
     const std::string fileName = "MainScene.csb";
-    auto data = FileUtils::getInstance()->getDataFromFile(fileName);
-    auto rootNode = static_cast<MainScene*>(CSLoader::createNode(data, MainScene::sm_nodeLoadCallback));
+    //auto data = FileUtils::getInstance()->getDataFromFile(fileName);
+    //auto rootNode = static_cast<MainScene*>(CSLoader::createNode(data, MainScene::sm_nodeLoadCallback));
+    auto rootNode = static_cast<MainScene *>(CSLoader::createNode(fileName, MainScene::sm_nodeLoadCallback));
     
     rootNode->setContentSize(Director::getInstance()->getWinSize());
     ui::Helper::doLayout(rootNode);
@@ -66,10 +68,29 @@ MainScene * MainScene::createDefault(void)
 
 Widget::ccWidgetTouchCallback MainScene::onLocateTouchCallback(const std::string &callBackName)
 {
-    if (callBackName == "onMainButton")
+    if (callBackName == "onPlayDownAct")
     {
-        return CC_CALLBACK_2(MainScene::onBuySkill, this);
+        return CC_CALLBACK_2(MainScene::onPlayDownAct, this);
     }
+    else if (callBackName == "onPlayLeftAct")
+    {
+        return CC_CALLBACK_2(MainScene::onPlayLeftAct, this);
+    }
+    else if (callBackName == "onPlayRightAct")
+    {
+        return CC_CALLBACK_2(MainScene::onPlayRightAct, this);
+    }
+    else if (callBackName == "onPlayTopAct")
+    {
+        return CC_CALLBACK_2(MainScene::onPlayTopAct, this);
+    }
+    
+    return nullptr;
+}
+
+cocos2d::ui::Widget::ccWidgetClickCallback MainScene::onLocateClickCallback(const std::string &callBackName)
+{
+    CCLOG("bla");
     return nullptr;
 }
 
@@ -128,25 +149,35 @@ void MainScene::refreshMemberVariables(void)
 }
 
 #pragma mark Button' callbacks
-void MainScene::onBuySkill(cocos2d::Ref * sender, cocos2d::ui::Widget::TouchEventType type)
+
+void MainScene::onPlayDownAct(cocos2d::Ref * sender, cocos2d::ui::Widget::TouchEventType type)
 {
     CCLOG("%d, %s", __LINE__, __FUNCTION__);
-    switch (type) {
-        case Widget::TouchEventType::BEGAN:
-        {
-            break;
-        }
-        case Widget::TouchEventType::MOVED:
-            break;
-        case Widget::TouchEventType::ENDED:
-        {
-            CCLOG("Buy_Skill");
-            break;
-        }
-        case Widget::TouchEventType::CANCELED:
-            break;
-            
-        default:
-            break;
+    if (Widget::TouchEventType::ENDED == type) {
+        CCLOG("%d, %s", __LINE__, __FUNCTION__);
+    }
+}
+
+void MainScene::onPlayLeftAct(cocos2d::Ref * sender, cocos2d::ui::Widget::TouchEventType type)
+{
+    CCLOG("%d, %s", __LINE__, __FUNCTION__);
+    if (Widget::TouchEventType::ENDED == type) {
+        CCLOG("%d, %s", __LINE__, __FUNCTION__);
+    }
+}
+
+void MainScene::onPlayRightAct(cocos2d::Ref * sender, cocos2d::ui::Widget::TouchEventType type)
+{
+    CCLOG("%d, %s", __LINE__, __FUNCTION__);
+    if (Widget::TouchEventType::ENDED == type) {
+        CCLOG("%d, %s", __LINE__, __FUNCTION__);
+    }
+}
+
+void MainScene::onPlayTopAct(cocos2d::Ref * sender, cocos2d::ui::Widget::TouchEventType type)
+{
+    CCLOG("%d, %s", __LINE__, __FUNCTION__);
+    if (Widget::TouchEventType::ENDED == type) {
+        CCLOG("%d, %s", __LINE__, __FUNCTION__);
     }
 }

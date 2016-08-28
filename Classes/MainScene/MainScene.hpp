@@ -45,7 +45,8 @@ public:
     CREATE_FUNC(MainScene)
     
 #pragma mark WidgetCallBackHandlerProtocol methods
-    virtual cocos2d::ui::Widget::ccWidgetTouchCallback onLocateTouchCallback(const std::string &callBackName) override;
+    cocos2d::ui::Widget::ccWidgetTouchCallback onLocateTouchCallback(const std::string &callBackName) override;
+    cocos2d::ui::Widget::ccWidgetClickCallback onLocateClickCallback(const std::string &callBackName) override;
     
     static MainScene * createDefault(void);
     
@@ -55,7 +56,10 @@ public:
     void refreshMemberVariables(void);
     
 #pragma mark Button' callbacks
-    void onBuySkill(cocos2d::Ref * sender, cocos2d::ui::Widget::TouchEventType type);
+    void onPlayDownAct(cocos2d::Ref * sender, cocos2d::ui::Widget::TouchEventType type);
+    void onPlayLeftAct(cocos2d::Ref * sender, cocos2d::ui::Widget::TouchEventType type);
+    void onPlayRightAct(cocos2d::Ref * sender, cocos2d::ui::Widget::TouchEventType type);
+    void onPlayTopAct(cocos2d::Ref * sender, cocos2d::ui::Widget::TouchEventType type);
 };
 
 #endif /* MainScene_hpp */
