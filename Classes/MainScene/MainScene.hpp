@@ -22,7 +22,7 @@
 class MainScene : public cocos2d::ui::Layout, public cocostudio::WidgetCallBackHandlerProtocol {
     friend class MainSceneReader;
 private:
-    //CC_DISALLOW_COPY_AND_ASSIGN(MainScene);
+    CC_DISALLOW_COPY_AND_ASSIGN(MainScene);
 protected:
     static MainScene * sm_pTmpInstance;
     static void setStaticInstance(MainScene * pInstance);
