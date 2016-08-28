@@ -34,6 +34,7 @@ CSLoader::getInstance()->registReaderObject(#readerClassName,(ObjectFactory::Ins
 
 void registerCustomReaders(void)
 {
+    CCLOG("%s, line:%d, func:%s", __FILE__, __LINE__, __FUNCTION__);
 #define X(a) REGISTER_READER(a##Reader);
     READERTYPES
 #undef X

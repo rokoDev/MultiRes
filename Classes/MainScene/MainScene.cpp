@@ -19,7 +19,6 @@ Scene* MainScene::createScene()
     
     // 'layer' is an autorelease object
     auto layer = MainScene::createDefault();
-    layer->refreshMemberVariables();
     
     // add layer as a child to scene
     scene->addChild(layer);

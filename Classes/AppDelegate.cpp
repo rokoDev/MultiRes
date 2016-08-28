@@ -1,5 +1,6 @@
 #include "AppDelegate.h"
 #include "MainScene.hpp"
+#include "RegisterCustomReaders.hpp"
 
 USING_NS_CC;
 
@@ -74,6 +75,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     this->setupResolutionPolicy();
 
     register_all_packages();
+    
+    //register reader' classes for cocostudio
+    registerCustomReaders();
 
     // create a scene. it's an autorelease object
     auto scene = MainScene::createScene();
