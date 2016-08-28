@@ -117,9 +117,9 @@ void AppDelegate::setupResolutionPolicy()
 {
     const std::set<Resource *> availableResources = {&iPadRes, &iPadHDRes, &iPadProRes};
     
-    auto calcScaleDistFunc = [](const cocos2d::Size & targetSize, const cocos2d::Size & candidateSize) -> double
+    auto calcScaleDistFunc = [](const cocos2d::Size & targetSize, const cocos2d::Size & candidateSize, float & scaleFactor) -> double
     {
-        const float scaleFactor = MIN(targetSize.width/candidateSize.width, targetSize.height/candidateSize.height);
+        scaleFactor = MIN(targetSize.width/candidateSize.width, targetSize.height/candidateSize.height);
         const auto scaledCandidateSize = candidateSize*scaleFactor;
         return fabs(scaledCandidateSize.width*scaledCandidateSize.height-candidateSize.width*candidateSize.height);
     };
@@ -128,20 +128,28 @@ void AppDelegate::setupResolutionPolicy()
     const Size targetSize = director->getOpenGLView()->getFrameSize();
     double minScaleDist = std::numeric_limits<double>::max();
     Resource * resForLoad = &iPadRes;//assign some defaul resource
+    float scaleFactor = 1.f;
     for (auto res : availableResources) {
-        auto scaleDist = calcScaleDistFunc(targetSize, res->physicalSize);
+        auto tmpScale = scaleFactor;
+        auto scaleDist = calcScaleDistFunc(targetSize, res->physicalSize, tmpScale);
         if (scaleDist < minScaleDist) {
             resForLoad = res;
             minScaleDist = scaleDist;
+            scaleFactor = tmpScale;
         }
     }
     
-    CCLOG("resForLoad >> %s\n", resForLoad->name.c_str());
     
-    director->getOpenGLView()->setDesignResolutionSize(resForLoad->logicalSize.width, resForLoad->logicalSize.height, ResolutionPolicy::SHOW_ALL);
-    //director->getOpenGLView()->setDesignResolutionSize(targetSize.width, targetSize.height, ResolutionPolicy::EXACT_FIT);
+    auto designSize = targetSize/scaleFactor*resForLoad->logicalSize.width/resForLoad->physicalSize.width;
+    
+    //CCLOG("resForLoad >> %s\n", resForLoad->name.c_str());
+    //CCLOG("designRes >> %f x %f\n", designSize.width, designSize.height);
     
     FileUtils::getInstance()->setSearchPaths(resForLoad->folders);
+    
+    //uncomment first line and comment out second if you want "black strips" to be shown when screen size don't match resource size
+    //director->getOpenGLView()->setDesignResolutionSize(resForLoad->logicalSize.width, resForLoad->logicalSize.height, ResolutionPolicy::SHOW_ALL);
+    director->getOpenGLView()->setDesignResolutionSize(designSize.width, designSize.height, ResolutionPolicy::SHOW_ALL);
 }
 
 // This function will be called when the app is inactive. Note, when receiving a phone call it is invoked.
