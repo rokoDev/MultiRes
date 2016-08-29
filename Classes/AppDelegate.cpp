@@ -145,11 +145,15 @@ void AppDelegate::setupResolutionPolicy()
     
     
     auto designSize = targetSize/scaleFactor*resForLoad->logicalSize.width/resForLoad->physicalSize.width;
+    designSize.width = std::roundf(designSize.width);
+    designSize.height = std::roundf(designSize.height);
     
-    //CCLOG("resForLoad >> %s\n", resForLoad->name.c_str());
+    CCLOG("resForLoad >> %s\n", resForLoad->name.c_str());
     //CCLOG("designRes >> %f x %f\n", designSize.width, designSize.height);
     
     FileUtils::getInstance()->setSearchPaths(resForLoad->folders);
+    
+    director->setContentScaleFactor(resForLoad->physicalSize.height/resForLoad->logicalSize.height);
     
     //uncomment first line and comment out second if you want "black strips" to be shown when screen size don't match resource size
     //director->getOpenGLView()->setDesignResolutionSize(resForLoad->logicalSize.width, resForLoad->logicalSize.height, ResolutionPolicy::SHOW_ALL);
